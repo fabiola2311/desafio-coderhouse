@@ -1,0 +1,22 @@
+<div class="m-4">
+    <h1 class="mb-4">Nuevo Producto Usando HBS</h1>
+    <form class="mb-4" action="/productos" method="post">
+        <div class="mb-3">
+            <label class="form-label" for="title">Nombre del Producto</label>
+            <input class="form-control" type="text" name="title" id="title">
+            <label class="form-label" for="price">Precio</label>
+            <input class="form-control" type="number" name="price" id="price">
+            <label class="form-label" for="thumbnail">Foto</label>
+            <input class="form-control" type="text" name="thumbnail" id="thumbnail">
+        </div>
+
+        <div class="mb-3">
+            <input class="btn btn-primary btn-lg" type="submit" value="Enviar">
+        </div>
+    </form>
+    <a href="/productos">
+        <button type="button" class="btn btn-secondary btn-lg">Listado de Productos</button>
+    </a>
+
+
+</div>
