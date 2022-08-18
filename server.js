@@ -1,15 +1,23 @@
 // Project import
 const Container = require('./container.js')
-const productos = new Container("productos.txt")
+const productos = new Container("productos.json")
+const mensajes = new Container('mensajes.json')
 
-
-// Express configuration
+// configuración del servidor
 const express = require('express');
+const { Server: HttpServer } = require('http');
+const { Server: IOServer } = require('socket.io');
+
 const app = express();
+const httpServer = new HttpServer(app);
+const io = new IOServer(httpServer);
+
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-//Handlebar import
+
+// Handlebar import
 const handlebars = require('express-handlebars');
 
 // App engine configuration
@@ -23,49 +31,49 @@ app.engine(
     })
 )
 
-
-//Selector
-const engine = 'pug'
-
-
 // Set engine
-app.set('view engine', engine)
+app.set('view engine', 'hbs')
 
 // Set views directory
-app.set('views', `./views_${engine}`)
+app.set('views', './views_hbs')
 
-// Ruta de acceso a public
-app.use('/static', express.static(__dirname + '/public'))
-
+// Ruta de acceso a public y archivos estaticos
+app.use(express.static('./public')); 
 
 // Ruta del formulario de carga
 app.get('/', (solicitud, respuesta) => {
-    respuesta.render('formulario', { layout: 'index' })
-})
-
-// Ruta del listado de productos
-app.get('/productos', async (solicitud, respuesta) => {
-    try {
-        const listadoProductos = await productos.getAll()
-        const productsExist = listadoProductos.length>0
-        respuesta.render('listadoDeProductos', { layout: 'index', productos: listadoProductos, productsExist })
-    } catch (error) {
-        console.log("Error:", error)
-    }
-})
-
-
-//* Ruta /productos POST 
-app.post('/productos', async (solicitud, respuesta) => {
-    let newProduct = solicitud.body
-    const idNewProduct = await productos.save(newProduct)
-    newProduct = await productos.getById(idNewProduct)
-    respuesta.redirect('/')
+    respuesta.render('formulario', { layout: 'index'})
 })
 
 
 //Conexión al servidor
 const PORT = 3000;
-const server = app.listen(PORT, () => {
+const server = httpServer.listen(PORT, () => {
     console.log(`Servidor http escuchando en el puerto ${server.address().port} usando express`)
+})
+
+//Configuración del Socket
+io.on('connection', socket => {
+    console.log('Un cliente se ha conectado');
+    productos.getAll()
+    .then(res => {
+        socket.emit('productsTable',res )
+    })
+
+    socket.on('new-product', async data => {
+        await productos.save(data);
+        io.sockets.emit('productsTable', await productos.getAll());
+    });
+
+    mensajes.getAll()
+    .then(res => {
+        socket.emit('messages',res )
+    })
+
+    socket.on('new-message', async data => {
+        await mensajes.save(data);
+        io.sockets.emit('messages', await mensajes.getAll());
+    });
+
+
 })

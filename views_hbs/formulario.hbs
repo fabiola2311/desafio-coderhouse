@@ -1,6 +1,6 @@
 <div class="m-4">
     <h1 class="mb-4">Nuevo Producto Usando HBS</h1>
-    <form class="mb-4" action="/productos" method="post">
+    <form class="mb-4" onsubmit=" return inputsProducts(this)">
         <div class="mb-3">
             <label class="form-label" for="title">Nombre del Producto</label>
             <input class="form-control" type="text" name="title" id="title">
@@ -14,9 +14,49 @@
             <input class="btn btn-primary btn-lg" type="submit" value="Enviar">
         </div>
     </form>
-    <a href="/productos">
-        <button type="button" class="btn btn-secondary btn-lg">Listado de Productos</button>
-    </a>
+</div>
 
+<hr>
+
+<div class="m-4">
+    <h1 class="mb-4">Lista de Productos con HBS</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Foto</th>
+            </tr>
+        </thead>
+        <tbody id="productsTable">
+
+
+        </tbody>
+    </table>
+
+</div>
+
+<hr>
+
+<div class="m-4">
+    <h1 class="mb-4">Centro de mensajes</h1>
+    <form class="mb-4" onsubmit=" return addMessage(this)">
+        <div class="row pb-4">
+            <div class="col">
+                <input type="email" id="mail" class="form-control" placeholder="xxx@xxx.com">
+            </div>
+            <hr>
+            <div class="col">
+                <input type="text" id="text" class="form-control" placeholder="Imgresa un mensaje">
+            </div>
+            <div class="col">
+                <input type="submit" class="btn btn-primary ps-5 pe-5" value="Enviar">
+            </div>
+        </div>
+    </form>
+    <ul class="list-group" id="messages">
+    </ul>
 
 </div>
