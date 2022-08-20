@@ -1,7 +1,11 @@
 // Project import
+const optionsProductos  = require('./options/options_mysql');
+const optionsMensajes = require('./options/options_sqlite');
+
 const Container = require('./container.js')
-const productos = new Container("productos.json")
-const mensajes = new Container('mensajes.json')
+
+const productos = new Container(optionsProductos,'productos')
+const mensajes = new Container(optionsMensajes,'mensajes')
 
 // configuración del servidor
 const express = require('express');

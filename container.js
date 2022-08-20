@@ -1,108 +1,74 @@
-const fs = require('fs');
 const { builtinModules } = require('module');
+const knex = require('knex')
 
 //Clase Container
 class Container {
 
-    constructor(file) {
-        this.file = file;
+    constructor(configuracion, tabla) {
+        this.knex = knex(configuracion)
+        this.tabla = tabla
     }
     //Función para guardar un producto
-    async save(object) {
-        try {
-
-            if (!fs.existsSync(this.file)) {
-                fs.writeFileSync(this.file, "[]")
-            }
-            let products = await fs.promises.readFile(this.file, 'utf-8')
-            if (!products||products=="[]") {
-                object = { id: 1, ...object }
-                products = [object]
-                await fs.promises.writeFile(this.file, JSON.stringify(products))
-                return 1
-            }
-            else {
-                products = JSON.parse(products)
-                const idObject = products[products.length - 1].id + 1
-                object = { id: idObject, ...object }
-                products = [...products, object]
-                await fs.promises.writeFile(this.file, JSON.stringify(products))
-                return idObject
-
-            }
-
-        } catch (error) {
-            console.log('Error al guardar el producto en save():', error)
-        }
+    save(object) {
+        this.knex(this.tabla).insert(object)
+            .then(() => console.log(`Nuevo dato insertado a la tabla: ${this.tabla}`))
+            .catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                this.knex.destroy();
+            });
     }
 
     //Función para traer el listado de productos
     async getAll() {
         try {
-            const products = await fs.promises.readFile(this.file, 'utf-8')
-            const productsParsed = products?JSON.parse(products):""
-            return productsParsed
+            const datos = await this.knex.from(this.tabla).select('*')
+            console.log(datos)
+            this.knex.destroy()
+            return datos
         } catch (error) {
-            console.log('Error de lectura en getAll():', error)
+            console.log(error)
         }
     }
 
     //Función para borrar el listado de productos
-    async deleteAll() {
-        try {
-            await fs.promises.writeFile(this.file, "[]")
-
-        } catch (error) {
-            console.log('Error al borrar productos en deleteAll():', error)
-
-        }
+    deleteAll() {
+        this.knex(this.tabla).del()
+            .then(() => console.log(`Se eliminaron todos los datos de la tabla: ${this.tabla}`))
+            .catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                this.knex.destroy();
+            });
     }
 
     //Función para actualizar un producto según su id
-    async updateById(id,newProduct){
-            let arrayProducts = await this.getAll()
-            arrayProducts = arrayProducts.map(product => {
-                if(product.id == id) return {id, ...newProduct}
-                return product
-            })
-            await fs.promises.writeFile(this.file, JSON.stringify(arrayProducts))
-            
+    updateById(id, newProduct) {
+        this.knex(this.tabla).where({ id }).update(newProduct)
+            .then(() => console.log(`Se actualizó el dato de la tabla: ${this.tabla} con id=${id}`))
+            .catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                this.knex.destroy();
+            });
     }
 
     //Función para traer un producto de acuerdo con el id 
-    async getById(id) {
-        try {
-            let products = await this.getAll()
-            let foundProduct = products.find(product => {
-                return product.id == id
-            })
-            if (foundProduct) {
-                return foundProduct
-
-            }
-            else {
-                console.log("no se encontró el producto")
-                return null
-            }
-
-        } catch (error) {
-            console.log('Error al obtener producto en getById():', error)
-
-        }
+    getById(id) {
+        this.knex.from(this.tabla).select('*').where({ id })
+            .then((datos) => { return datos })
+            .then(() => console.log(`Datos de la tabla: ${this.tabla} con id=${id}`))
+            .catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                this.knex.destroy();
+            });
     }
 
     //Función para borrar un producto de acuerdo con el id 
-    async deleteById(id) {
-            let products = await this.getAll()
-            let productToDelete = await this.getById(id)
-
-            products = products.filter(product => {
-                return product.id != productToDelete.id
-            })
-
-            await fs.promises.writeFile(this.file, JSON.stringify(products))
-
-
+    deleteById(id) {
+        this.knex(this.tabla).where({ id }).del()
+            .then(() => console.log(`Se eliminó el dato de la tabla: ${this.tabla} con id=${id}`))
+            .catch((err) => { console.log(err); throw err })
+            .finally(() => {
+                this.knex.destroy();
+            });
     }
 }
 
