@@ -19,6 +19,7 @@ class Container {
     }
 
     //Función para traer el listado de productos
+
     async getAll() {
         try {
             const datos = await this.knex.from(this.tabla).select('*')
